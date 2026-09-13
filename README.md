@@ -5,6 +5,9 @@ This repository contains the source code for my CM3070 Computer Science Final Pr
 The application uses a Random Forest classifier to predict whether a stock
 will outperform a selected market benchmark over the next 100 trading days.
 
+To use the AI explanation function, you must download Ollama
+and use glm-4.7-flash:latest model
+
 *** Note: to be able to run the prediction and scanning function, **YOU MUST TRAIN A MODEL FIRST**.
 *** Depends on how many features you select, training the model can take some time, please be patient.  
 
