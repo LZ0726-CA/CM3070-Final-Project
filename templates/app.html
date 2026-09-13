@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<!-- Jinja template reference: https://jinja.palletsprojects.com/en/stable/templates/ -->
+<html>
+<head>
+    <title>Financial Advisor Bot Application</title>
+    <!-- load css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<div class="container">
+    <h1>Financial Advisor Bot - Stock Performance Predictor</h1>
+    <!-- waiting message -->
+    <div id="waiting-message" class="waiting-message">
+        Please wait while the system is processing your request...
+    </div>
+
+    <!-- stock prediction section -->
+    <section class="prediction-section">
+        <h2>Run a Stock Prediction</h2>
+        <form method="POST">
+            <input type="hidden" name="action" value="predict">
+            <label for="ticker">Stock ticker: </label>
+            <!-- inputs for prediction: -->
+            <input
+                type="text"
+                id="ticker"
+                name="ticker"
+                value="{{ ticker or '' }}"
+                placeholder=""
+                required
+            >
+
+            <!-- get the list of all available models:  -->
+            <label for="prediction_model">Model: </label>
+            <select id="prediction_model" name="prediction_model" required>
+                {% for model_item in available_models %}
+                    <option
+                        value="{{ model_item.filename }}"
+                        {% if selected_model_id == model_item.filename %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ model_item.display_name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="submit-button"> Run Prediction </button>
+        </form>
+
+        <!-- display the prediction result -->
+        {% if predict_direction %}
+            <div class="result">
+                {% if prediction is not none %}
+                    <h2>Prediction for {{ ticker }}</h2>
+                    <p>Selected model: {{ selected_model }}</p>
+                    {% if prediction_date %}
+                        <p>Data date: {{prediction_date.strftime("%Y-%m-%d")}}</p>
+                    {% endif %}
+                    <p>Outperformance model score: {{"%.1f%%" | format(prediction * 100)}}</p>
+                    {% if prediction_threshold is not none %}
+                        <p>Classification threshold: {{ "%.0f%%" | format(prediction_threshold * 100) }}</p>
+                    {% endif %}
+                {% endif %}
+                <p>{{ predict_direction }}</p>
+            </div>
+        {% endif %}
+
+        <!-- display prediction error message -->
+        {% if prediction_error %}
+            <div class="error-box">
+                <h3>Prediction Error</h3>
+                <p>{{ prediction_error }}</p>
+            </div>
+        {% endif %}
+
+        <!-- display AI explanation -->
+        {% if ai_explanation %}
+            <div class="ai-box">
+                <h2>AI Assistant Explanation</h2>
+                <div class="ai-text"> {{ ai_explanation }}</div>
+            </div>
+        {% endif %}
+    </section>
+
+
+    
+    <!-- index scanning section -->
+    <section class="scan-section">
+        <h2>Scan an Index</h2>
+
+        <p>
+            Select an index and a trained model.
+            The application will scan all stocks in the selected index and rank them by predicted performance.
+            Only the top 50 results will show here. A higher prediction score means that the model more strongly favors the stock being classified as outperforming the benchmark over the next 100 trading days. 
+            The prediction score is a model output and does not represent the actual probability that the stock will outperform.
+        </p>
+
+        <form method="POST">
+            <input type="hidden" name="action" value="scan">
+
+            <!-- select index -->
+            <label for="scan_index">Select an index:</label>
+
+            <select id="scan_index" name="scan_index" required>
+                <option value="">Select an index</option>
+                <option value="SP500" {% if selected_scan_index == "SP500" %}selected{% endif %}>
+                    S&amp;P 500
+                </option>
+                <option value="NASDAQ100" {% if selected_scan_index == "NASDAQ100" %}selected{% endif %}>
+                    NASDAQ 100
+                </option>
+                <option value="DOWJONES" {% if selected_scan_index == "DOWJONES" %}selected{% endif %}>
+                    Dow Jones Industrial Average
+                </option>
+            </select>
+
+            <!-- select saved model -->
+            <!-- get the list of all available models:  -->
+            <label for="scan_model">Model:</label>
+            <select id="scan_model" name="scan_model" required>
+                {% for model_item in available_models %}
+                    <option
+                        value="{{ model_item.filename }}"
+                        {% if selected_scan_model == model_item.filename %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ model_item.display_name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="submit-button">Scan</button>
+        </form>
+
+        <!-- display scan error message-->
+        {% if scan_error %}
+            <div class="error-box">
+                <h3>Scan Error</h3>
+                <p>{{ scan_error }}</p>
+            </div>
+        {% endif %}
+
+        <!-- display scan results message-->
+        {% if scan_results %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Ticker</th>
+                        <th>Prediction Score</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for result in scan_results %}
+                        <tr>
+                            <td>{{ result.rank }}</td>
+                            <td>{{ result.ticker }}</td>
+                            <td>{{ "%.1f"|format(result.probability * 100) }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% elif scan_completed %}
+            <div class="scan-result">
+                <p>No stocks were classified as outperform.</p>
+            </div>
+        {% endif %}
+    </section>
+
+
+
+
+    <!-- model training section -->
+    <section class="training-section">
+        <h2>Train a New Model</h2>
+        <p>
+            Select an index, training dates, and features.
+            The application will download the stocks belonging to
+            the selected index and train a new model.
+        </p>
+        <form method="POST">
+            <input type="hidden" name="action" value="train">
+            <!-- new model name -->
+            <label for="new_model_name">New model name:</label>
+            <input
+                type="text"
+                id="new_model_name"
+                name="new_model_name"
+                value="{{ new_model_name or '' }}"
+                maxlength="80"
+                required
+            >
+
+            <!-- select a benchmark index -->
+            <label>Select a benchmark index:</label>
+            <select id="training_index" name="training_index" required>
+                <option value="">Select an index</option>
+                <option value="SP500" {% if selected_index == "SP500" %}selected{% endif %}>
+                    S&amp;P 500
+                </option>
+                <option value="NASDAQ100" {% if selected_index == "NASDAQ100" %}selected{% endif %}>
+                    NASDAQ 100
+                </option>
+                <option value="DOWJONES" {% if selected_index == "DOWJONES" %}selected{% endif %}>
+                    Dow Jones Industrial Average
+                </option>
+            </select>
+
+            <!-- select model training date -->
+            <label>Select training start date:</label>
+            <input
+                type="date"
+                id="training_start_date"
+                name="training_start_date"
+                value="{{ training_start_date or '' }}"
+                required
+            >
+            <label>Select training end date:</label>
+            <input
+                type="date"
+                id="training_end_date"
+                name="training_end_date"
+                value="{{ training_end_date or '' }}"
+                required
+            >
+
+            <!-- select features (technical indicator) -->
+            <h3>Select Features</h3>
+            <!-- buttons to select and unselect all features -->
+            <div class="feature-button">
+                <button type="button" class="submit-button" onclick="selectAllFeatures()">
+                    Select All
+                </button>
+                <button type="button" class="submit-button" onclick="clearAllFeatures()">
+                    Clear All
+                </button>
+                <span id="selected-feature-count">0 features selected</span>
+            </div>
+            <!-- display and select features -->
+            <div id="feature-selection">
+                {% for group_name, features in feature_groups.items() %}
+                    <fieldset class="feature-group">
+                        <legend>{{ group_name }}</legend>
+                        <div class="feature-grid">
+                            {% for feature in features %}
+                                <label class="feature-option">
+                                    <input
+                                        type="checkbox"
+                                        name="selected_features"
+                                        value="{{ feature }}"
+                                        {% if feature in selected_features %}
+                                            checked
+                                        {% endif %}
+                                        onchange="updateSelectedFeatureCount()"
+                                    >
+                                    <span class="custom-checkbox"></span>
+                                    <span class="feature-name">{{ feature }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="submit-button">
+                Download Data and Train Model
+            </button>
+        </form>
+
+        <!-- display training error message -->
+        {% if training_error %}
+            <div class="error-box">
+                <h3>Training Error</h3>
+                <p>{{ training_error }}</p>
+            </div>
+        {% endif %}
+
+        <!-- display training results message -->
+        {% if training_message %}
+            <div class="training-result">
+                <h3>Model Training Completed</h3>
+                <p>{{ training_message }}</p>
+                {% if saved_model_filename %}
+                    <p>Saved file: {{ saved_model_filename }}</p>
+                {% endif %}
+
+                {% if training_metrics %}
+                    <h4>Validation Results</h4>
+                    <p>Validation accuracy:{{ "%.1f%%" | format(training_metrics.validation_accuracy * 100) }}</p>
+                    <p>Validation precision:{{ "%.1f%%" | format(training_metrics.validation_precision * 100) }}</p>
+                    <p>Validation recall:{{ "%.1f%%" | format(training_metrics.validation_recall * 100) }}</p>
+                    <p>Validation F1-score:{{ "%.1f%%" | format(training_metrics.validation_f1 * 100) }}</p>
+ 
+                    <h4>Test Results</h4>
+                    <p>Test accuracy:{{ "%.1f%%" | format(training_metrics.test_accuracy * 100) }}</p>
+                    <p>Test precision:{{ "%.1f%%" | format(training_metrics.test_precision * 100) }}</p>
+                    <p>Test recall:{{ "%.1f%%" | format(training_metrics.test_recall * 100) }}</p>
+                    <p>Test F1-score:{{ "%.1f%%" | format(training_metrics.test_f1 * 100) }}</p>
+
+                    {% if training_metrics.evaluation_threshold is defined %}
+                        <p>Evaluation threshold:{{ "%.0f%%" | format(training_metrics.evaluation_threshold * 100) }}</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+// this function gets all the features from the feature selection section
+function getFeatureCheckboxes() {
+    const featureContainer = document.getElementById("feature-selection");
+    return featureContainer.querySelectorAll('input[name="selected_features"][type="checkbox"]')
+}
+
+// this function select all the features
+function selectAllFeatures() {
+    const checkboxes = getFeatureCheckboxes();
+    checkboxes.forEach(function(checkbox) {checkbox.checked = true });
+    updateSelectedFeatureCount()
+}
+
+// this function unselect all the features
+function clearAllFeatures() {
+    const checkboxes = getFeatureCheckboxes();
+    checkboxes.forEach(function(checkbox) {checkbox.checked = false});
+    updateSelectedFeatureCount()
+}
+
+// count how many features selected
+function updateSelectedFeatureCount() {
+    const checkboxes = getFeatureCheckboxes();
+    const selected = Array.from(checkboxes).filter(function(checkbox) {return checkbox.checked});
+    const count = selected.length
+    const countDisplay = document.getElementById("selected-feature-count");
+    countDisplay.textContent = count + " features selected"
+}
+
+// update the selected feature count
+document.addEventListener("DOMContentLoaded", updateSelectedFeatureCount)
+
+// waiting message
+document.querySelectorAll("form").forEach(function(form) {
+    form.addEventListener("submit", function() {
+        document.getElementById("waiting-message").style.display = "block"
+    })
+})
+</script>
+
+
+</body>
+</html>

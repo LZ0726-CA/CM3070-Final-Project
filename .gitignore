@@ -1,0 +1,19 @@
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Downloaded market data
+downloaded_data/
+
+# VS Code settings
+.vscode/
+
+# Windows files
+Thumbs.db
+Desktop.ini
+
+# Saved trained models
+saved_models/

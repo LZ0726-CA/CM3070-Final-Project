@@ -1,0 +1,206 @@
+/* overall style */
+body {
+    font-family: Arial, sans-serif;
+    background-color: wheat}
+
+h1 {text-align: center; font-size: 26px}
+h2 {font-size: 20px}
+h3 {font-size: 18px}
+h4 {font-size: 16px}
+p {font-size: 14px}
+
+.container {
+    width: 700px;
+    margin: 60px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px}
+
+/* regular form fields  */
+form > input[type="text"],
+form > input[type="date"],
+form > select {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 12px 0;
+    padding: 10px;
+    font-size: 16px;}
+
+/* submit buttons */
+.submit-button {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 16px 0;
+    padding: 10px;
+    font-size: 16px;
+    background-color: lightskyblue;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;}
+
+/* change button colour when hovering */
+.submit-button:hover {
+    background-color: lightcoral;}
+
+/* prediction, scanning and training areas */
+.training-section,
+.prediction-section,
+.scan-section {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid lightgray;
+    border-radius: 10px;}
+
+/* prediction results */
+.result {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: lightgray;
+    border-radius: 8px}
+
+/* AI explaination */
+.ai-box {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: lightgreen;
+    border-left: 5px solid greenyellow;
+    border-radius: 8px}
+
+.ai-text {white-space: pre-line;}
+
+/* features section */
+.feature-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px}
+
+.feature-button .submit-button {
+    display: inline-block;
+    width: auto;
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 14px}
+
+#selected-feature-count {
+    margin-left: auto;
+    font-weight: bold;
+    white-space: nowrap;}
+
+.feature-group {
+    margin-bottom: 20px;
+    padding: 16px;
+    border: 1px solid lightblue;
+    border-radius: 8px}
+
+.feature-group legend {
+    padding: 0 8px;
+    font-weight: bold;
+    font-size: 17px}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(230px, 1fr));
+    gap: 10px}
+
+.feature-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid lightgray;
+    border-radius: 6px;
+    background: whitesmoke;
+    cursor: pointer;
+    user-select: none}
+
+.feature-option:hover {
+    background: whitesmoke;
+    border-color: gray;}
+
+/* hide browser checkbox */
+.feature-option input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none}
+
+/* display custom checkbox */
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid grey;
+    border-radius: 4px;
+    background: white;}
+
+/* change checkbox appearance when selected */
+.feature-option input[type="checkbox"]:checked
++ .custom-checkbox {
+    background: darkgrey;
+    border-color: lightblue}
+
+/* add check mark to the check box */
+.feature-option input[type="checkbox"]:checked
++ .custom-checkbox::after {
+    content: "✓";
+    font-size: 14px;
+    font-weight: bold;
+    color: white;}
+
+/* highlight feature row when selected  */
+.feature-option:has(input[type="checkbox"]:checked) {
+    background: lightpink; border-color: lightcoral}
+
+.feature-name {
+    font-size: 14px;
+    overflow-wrap: anywhere;}
+
+/* error message */
+.error-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: mistyrose;
+    border-left: 5px solid red;
+    border-radius: 8px}
+
+/* training results message */
+.training-result {
+    margin-top: 20px;
+    padding: 15px;
+    background: honeydew;
+    border-radius: 8px}
+
+/* waiting message */
+.waiting-message {
+    display: none;
+    margin: 20px 0;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    font-weight: bold}
+
+/* scan results */
+.scan-result {
+    margin-top: 20px;
+    padding: 15px;
+    background: honeydew;
+    border-radius: 8px}
+
+/* scan results table */
+.scan-section table {
+    margin: 20px 0;
+    width: auto;
+    border-collapse: collapse;
+    text-align: left}
+
+.scan-section th,
+.scan-section td {
+    padding: 8px 20px 8px 0;
+    text-align: left;
+    border: none}
